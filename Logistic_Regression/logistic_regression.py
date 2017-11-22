@@ -37,6 +37,7 @@ def train(x_train, y_train, size, batch_size=20, epochs=2000, learning_rate=0.2)
 
 			# Fetch a random sample and do not replace it to not pick it again
 			idx = np.random.choice(len(x_train),batch_size,replace=False)
+
 			# Run the training step in batches
 			_, l = sess.run([train_step, cost], feed_dict={x : x_train[idx], y_ : y_train[idx]})
 
@@ -57,10 +58,9 @@ def test(x_test, y_test, size):
 	correct_prediction = tf.equal(y_test, y_)
 	accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
-	with tf.session() as sess:
+	with tf.Session() as sess:
 		saver.restore(sess, "./model/model.ckpt")
-		result = accuracy.eval(feed_dict={x: x_test, y: y_test})
-
+		result = accuracy.eval(feed_dict={x: x_test, y_: y_test})
 		print result
 
 
@@ -97,7 +97,7 @@ def run():
 	x_test = features[index:]
 	y_test = labels[index:]
 
-	num_features = len(features[0])
+	num_features = features[0].shape[1]
 
 	train(x_train, y_train, num_features)
 	test(x_test, y_test, num_features)
