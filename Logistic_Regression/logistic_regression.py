@@ -1,18 +1,18 @@
 import tensorflow as tf
 import numpy as np
 
-def train(x_train, y_train, batch_size=20, epochs=2000, learning_rate=0.2):
+def train(x_train, y_train, size, batch_size=20, epochs=2000, learning_rate=0.2):
 
 	# Define input, output variables
 	x = tf.placeholder(tf.float32, shape=[None, size])
 	y_ = tf.placeholder(tf.float32, shape=[None, 1])
 
 	# Define the parameter variable
-	w = tf.Variable(tf.truncated_normal_initializer(stddev=0.1))
-	b = tf.Variable(tf.constant_initializer(0.0))
+	w = tf.Variable(tf.random_normal([size, 1],stddev=0.1))
+	b = tf.Variable(tf.constant(0.0))
 
 	# Output
-	z = tf.add(tf.matmul(x, W), b)
+	z = tf.add(tf.matmul(x, w), b)
 
 	# Activation
 	a = tf.sigmoid(z)
@@ -28,7 +28,7 @@ def train(x_train, y_train, batch_size=20, epochs=2000, learning_rate=0.2):
 
 	saver = tf.train.Saver()
 
-	with tf.session() as sess:
+	with tf.Session() as sess:
 
 		# Initialise all the nodes
 		sess.run(init_op)
@@ -36,10 +36,10 @@ def train(x_train, y_train, batch_size=20, epochs=2000, learning_rate=0.2):
 		for epoch in range(epochs):
 
 			# Fetch a random sample and do not replace it to not pick it again
-			idx = np.random.choice(len(X_train),batch_size,replace=False)
-
+			idx = np.random.choice(len(x_train),batch_size,replace=False)
+			print idx
 			# Run the training step in batches
-			_, l = sess.run([train_step, cost], feed_dict={x : X_train[idx], y_ : y_train[idx]})
+			_, l = sess.run([train_step, cost], feed_dict={x : x_train[idx], y_ : y_train[idx]})
 
 			if epoch % 100 == 0:
 				print "Number of epochs = " + str(epoch) + " ....... Loss = " + str(l)
@@ -65,28 +65,42 @@ def test(x_test, y_test, size):
 		print result
 
 
-def load_data():
+def load_data(filename):
 
-	filename_queue = tf.train.string_input_producer(["./data/data.txt"])
+	# Arrays to hold the labels and feature vectors.
+	labels = []
+	fvecs = []
 
-	reader = tf.TextLineReader()
-	key, value = reader.read(filename_queue)
+	# Iterate over the rows, splitting the label from the features. Convert labels
+	# to integers and features to floats.
+	for line in file(filename):
+		row = line.strip().split(",")
+		labels.append(float(row[-1]))
+		fvecs.append([float(x) for x in row[:-1]])
 
-	# Default values, in case of empty columns. Also specifies the type of the
-	# decoded result.
+	# Convert the array of float arrays into a numpy float matrix.
+	fvecs_np = np.matrix(fvecs).astype(np.float32)
 
-	x = tf.placeholder(tf.float32, shape=[None, 3])
-	y = tf.placeholder(tf.float32, shape=[None, 1])
+	# Convert the array of int labels into a numpy array.
+	labels = np.array(labels).astype(dtype=np.float32)
 
-	record_defaults = [[1.0], [1.0], [1.0], [1.0]]
-	col1, col2, col3, y = tf.decode_csv(
-	    value, record_defaults=record_defaults)
-	
-	x = tf.pack([col1, col2, col3])
+	# Return a pair of the feature matrix and the label matrix.
+	return fvecs_np,labels
 
-	with tf.Session() as sess:
-	
-		for i in data:
-			print i.eval()
 
-load_data()
+def run():
+
+	features, labels = load_data("./data/data.txt")
+	index = int(len(features) * 0.7)
+	x_train = features[:index]
+	y_train = labels[:index]
+
+	x_test = features[index:]
+	y_test = labels[index:]
+
+	num_features = len(features[0])
+
+	train(x_train, y_train, num_features)
+	test(x_test, y_test, num_features)
+
+run()
