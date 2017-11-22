@@ -37,7 +37,6 @@ def train(x_train, y_train, size, batch_size=20, epochs=2000, learning_rate=0.2)
 
 			# Fetch a random sample and do not replace it to not pick it again
 			idx = np.random.choice(len(x_train),batch_size,replace=False)
-			print idx
 			# Run the training step in batches
 			_, l = sess.run([train_step, cost], feed_dict={x : x_train[idx], y_ : y_train[idx]})
 
@@ -85,7 +84,7 @@ def load_data(filename):
 	labels = np.array(labels).astype(dtype=np.float32)
 
 	# Return a pair of the feature matrix and the label matrix.
-	return fvecs_np,labels
+	return fvecs_np.reshape(fvecs_np.shape[0], 3), labels.reshape(labels.shape[0], 1)
 
 
 def run():
