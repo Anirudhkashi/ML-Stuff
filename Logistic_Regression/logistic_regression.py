@@ -1,7 +1,7 @@
 import tensorflow as tf
 import numpy as np
 
-def train(x_train, y_train, size, batch_size=20, epochs=2000, learning_rate=0.2):
+def logistic_regression(x_train, y_train, x_test, y_test, size, batch_size=20, epochs=2000, learning_rate=0.2):
 
 	# Define input, output variables
 	x = tf.placeholder(tf.float32, shape=[None, size])
@@ -26,7 +26,9 @@ def train(x_train, y_train, size, batch_size=20, epochs=2000, learning_rate=0.2)
 	# Add an op to initialize the variables.
 	init_op = tf.global_variables_initializer()
 
-	saver = tf.train.Saver()
+	delta = tf.subtract(y_test, a)
+	correct_prediction = tf.cast(tf.less(delta, tf.constant(0.5)), tf.float32)
+	accuracy = tf.reduce_sum(tf.cast(correct_prediction, tf.float32))
 
 	with tf.Session() as sess:
 
@@ -43,26 +45,8 @@ def train(x_train, y_train, size, batch_size=20, epochs=2000, learning_rate=0.2)
 
 			if epoch % 100 == 0:
 				print "Number of epochs = " + str(epoch) + " ....... Loss = " + str(l)
-
-		saver.save(sess, "./model/model.ckpt")
-
-
-def test(x_test, y_test, size):
-
-	saver = tf.train.Saver()
-
-	# Define input, output variables
-	x = tf.placeholder(tf.float32, shape=[None, size])
-	y_ = tf.placeholder(tf.float32, shape=[None, 1])
-
-	correct_prediction = tf.equal(y_test, y_)
-	accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-
-	with tf.Session() as sess:
-		saver.restore(sess, "./model/model.ckpt")
-		result = accuracy.eval(feed_dict={x: x_test, y_: y_test})
-		print result
-
+		
+		print float(accuracy.eval({x : x_test, y_ : y_test})) / len(x_test)
 
 def load_data(filename):
 
@@ -99,7 +83,6 @@ def run():
 
 	num_features = features[0].shape[1]
 
-	train(x_train, y_train, num_features)
-	test(x_test, y_test, num_features)
+	logistic_regression(x_train, y_train, x_test, y_test, num_features)
 
 run()
