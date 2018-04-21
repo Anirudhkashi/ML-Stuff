@@ -65,10 +65,10 @@ def load_data(filename):
 	fvecs_np = np.matrix(fvecs).astype(np.float32)
 
 	# Convert the array of int labels into a numpy array.
-	labels = np.array(labels).astype(dtype=np.float32)
+	labels = np.array(labels).astype(dtype=np.float32).reshape(len(labels), 1)
 
 	# Return a pair of the feature matrix and the label matrix.
-	return fvecs_np.reshape(fvecs_np.shape[0], 3), labels.reshape(labels.shape[0], 1)
+	return fvecs_np, labels
 
 
 def run():
